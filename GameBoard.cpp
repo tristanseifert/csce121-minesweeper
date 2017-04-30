@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <algorithm>
 #include <FL/fl_draw.H>
 
 using namespace std;
@@ -184,14 +185,21 @@ int GameBoard::handle(int event) {
 /**
  * Uncovers the cell.
  */
-void GameBoard::uncoverCell(int x, int y) {
+void GameBoard::uncoverCell(int x, int y, bool isRecursive) {
 	TileType &t = this->storage[x][y];
+
+	// check if this tile has been uncovered before
+	if(std::find(this->uncoveredCells.begin(), this->uncoveredCells.end(), Point(x, y)) != this->uncoveredCells.end()) {
+		return;
+	}
+
+	this->uncoveredCells.push_back(Point(x, y));
 
 	// set uncovered flag
 	t.uncovered = true;
 
 	// is this a mine?
-	if(t.isMine == true) {
+	if(t.isMine == true && !isRecursive) {
 		// lmao game over
 		this->_parent->gameOver();
 
@@ -199,6 +207,43 @@ void GameBoard::uncoverCell(int x, int y) {
 	} else {
 		// calculate how many mines there are around this point
 		t.surroundingMines = this->minesAroundCell(x, y);
+
+		// if clue value is zero, uncover all adjacent tiles
+		if(t.surroundingMines == 0) {
+			if((x - 1) >= 0 && (y - 1) >= 0) {
+				this->uncoverCell((x - 1), (y - 1), true);
+			}
+			// top middle
+			if(/*(x - 0) >= 0 &&*/ (y - 1) >= 0) {
+				this->uncoverCell((x - 0), (y - 1), true);
+			}
+			// top right
+			if((x + 1) < this->gridW && (y - 1) >= 0) {
+				this->uncoverCell((x + 1), (y - 1), true);
+			}
+
+			// middle left
+			if((x - 1) >= 0/* && (y - 1) >= 0*/) {
+				this->uncoverCell((x - 1), (y - 0), true);
+			}
+			// middle right
+			if((x + 1) < this->gridW/* && (y - 1) >= 0*/) {
+				this->uncoverCell((x + 1), (y - 0), true);
+			}
+
+			// bottom left
+			if((x - 1) >= 0 && (y + 1) < this->gridH) {
+				this->uncoverCell((x - 1), (y + 1), true);
+			}
+			// bottom middle
+			if(/*(x - 0) >= 0 &&*/ (y + 1) < this->gridH) {
+				this->uncoverCell((x - 0), (y + 1), true);
+			}
+			// bottom right
+			if((x + 1) < this->gridW && (y + 1) < this->gridH) {
+				this->uncoverCell((x + 1), (y + 1), true);
+			}
+		}
 	}
 
 	// force redraw
@@ -207,10 +252,6 @@ void GameBoard::uncoverCell(int x, int y) {
 
 /**
  * Determines how many mines surround the cell at the given position.
- *
- * X X X
- * X * X
- * X X X
  */
 int GameBoard::minesAroundCell(int x, int y) {
 	int mines = 0;

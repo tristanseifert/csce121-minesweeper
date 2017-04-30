@@ -37,6 +37,15 @@ struct TileType {
 	int surroundingMines = -1;
 };
 
+struct Point {
+	Point(int x, int y) : x(x), y(y) {}
+
+	int x, y;
+};
+
+inline bool operator==(const Point& lhs, const Point& rhs){ return (lhs.x == rhs.x) && (lhs.y == rhs.y); }
+inline bool operator!=(const Point& lhs, const Point& rhs){ return !(lhs == rhs); }
+
 class GameBoard : public Fl_Box {
 	friend class MainWindow;
 
@@ -63,7 +72,7 @@ class GameBoard : public Fl_Box {
 		void _loadImages();
 
 		int minesAroundCell(int x, int y);
-		void uncoverCell(int x, int y);
+		void uncoverCell(int x, int y, bool isRecursive = false);
 
 	private:
 		Fl_PNG_Image *_imgMine;
@@ -78,6 +87,9 @@ class GameBoard : public Fl_Box {
 
 		// when set, all mines are displayed
 		bool debugMode = true;
+
+		// all cells uncovered
+		std::vector<Point> uncoveredCells;
 };
 
 #endif

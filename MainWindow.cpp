@@ -105,7 +105,7 @@ void MainWindow::setupGameSized(int w, int h) {
 	int boardY = (30 + 10) + (48 + 10);
 
 	this->board = new GameBoard(10, boardY, w, h, this);
-	this->board->generateMines(128);
+	this->board->generateMines(48);
 
 	this->add(this->board);
 }
