@@ -55,8 +55,17 @@ void MainWindow::_initMenuBar() {
 void MainWindow::_initStatusBar() {
 	this->_statusBox = new Fl_Box(FL_EMBOSSED_BOX, 10, (30 + 10), 32, 32, nullptr);
 
+	// mines remaining (left)
+	this->_statusMines = new Fl_Box(FL_BORDER_BOX, 20, (30 + 18), 64, 32, "099");
+
+	// timer (right)
+	this->_statusTimer = new Fl_Box(FL_BORDER_BOX, 200, (30 + 18), 64, 32, "000");
+
 	// add to window
 	this->add(this->_statusBox);
+
+	this->add(this->_statusMines);
+	this->add(this->_statusTimer);
 }
 
 MainWindow::~MainWindow() {
@@ -107,4 +116,6 @@ void MainWindow::_reshape(int w, int h) {
 
 	// reshape status bar
 	this->_statusBox->size((newW - (10 * 2)), 48);
+	this->_statusTimer->position((newW - (10 * 2) - 64), (30 + 18));
+
 }

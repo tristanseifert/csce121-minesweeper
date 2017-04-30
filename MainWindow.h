@@ -29,7 +29,10 @@ class MainWindow : public Fl_Window {
 		void setupGameSized(int w, int h);
 
 		Fl_Menu_Bar *_menuBar;
+
 		Fl_Box *_statusBox;
+		Fl_Box *_statusMines;
+		Fl_Box *_statusTimer;
 
 		GameBoard *board;
 };
