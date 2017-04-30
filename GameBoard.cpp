@@ -94,7 +94,14 @@ void GameBoard::draw() {
 			}
 			// otherwise, draw a plain border
 			else {
-				fl_draw_box(FL_BORDER_BOX, x, y, CELL_SIZE, CELL_SIZE, FL_DARK1);
+				Fl_Color c = FL_DARK1;
+
+				// should the box be red?
+				if(t[RED_BIT]) {
+					c = FL_RED;
+				}
+
+				fl_draw_box(FL_BORDER_BOX, x, y, CELL_SIZE, CELL_SIZE, c);
 			}
 
 			// draw on top if uncovered OR debug mode is enabled
@@ -131,7 +138,7 @@ int GameBoard::handle(int event) {
 
 		// left button?
 		if(Fl::event_button() == FL_LEFT_MOUSE) {
-
+			this->uncoverCell(x, y);
 		}
 		// middle button?
 		else if(Fl::event_button() == FL_MIDDLE_MOUSE) {
@@ -148,4 +155,45 @@ int GameBoard::handle(int event) {
 	else {
 		return Fl_Box::handle(event);
 	}
+}
+
+/**
+ * Uncovers the cell.
+ */
+void GameBoard::uncoverCell(int x, int y) {
+	TileType &t = this->storage[x][y];
+
+	// set uncovered flag
+	t[UNCOVERED_BIT] = true;
+
+	// is this a mine?
+	if(t[MINE_BIT] == true) {
+		// lmao game over
+		this->_parent->gameOver();
+
+		t[RED_BIT] = true;
+	}
+
+	// force redraw
+	this->redraw();
+}
+
+/**
+ * Calculates the number of mines that are on the board and have NOT been
+ * uncovered by the user.
+ */
+int GameBoard::getMinesRemaining() const {
+	int remaining = 0;
+
+	for(int i = 0; i < this->gridW; i++) {
+		for(int j = 0; j < this->gridH; j++) {
+			TileType t = this->storage[i][j];
+
+			if(t[MINE_BIT] == true && t[UNCOVERED_BIT] == false) {
+				remaining++;
+			}
+		}
+	}
+
+	return remaining;
 }

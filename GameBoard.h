@@ -20,12 +20,16 @@ static const int CELL_SIZE = 16;
 static const int MINE_BIT = 0x0;
 // was this cell flagged?
 static const int FLAGGED_BIT = 0x1;
+// the background of the cell should be red
+static const int RED_BIT = 0xD;
 // has this cell been uncovered?
 static const int UNCOVERED_BIT = 0xF;
 
 typedef std::bitset<16> TileType;
 
 class GameBoard : public Fl_Box {
+	friend class MainWindow;
+
 	public:
 		/**
 		 * Creates a new game board. w/h is in cells
@@ -38,10 +42,17 @@ class GameBoard : public Fl_Box {
 		virtual void draw();
 		virtual int handle(int);
 
+		int getMinesRemaining() const;
+		int getTime() const {
+			return -999;
+		}
+
 	private:
 		void updateGrid();
 
 		void _loadImages();
+
+		void uncoverCell(int x, int y);
 
 	private:
 		Fl_PNG_Image *_imgMine;

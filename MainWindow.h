@@ -12,11 +12,18 @@
 #include "GameBoard.h"
 
 class MainWindow : public Fl_Window {
+	friend class GameBoard;
+
 	public:
     	MainWindow(int w, int h, const char* t);
     	~MainWindow();
 
 		void startGame();
+
+	protected:
+		void updateGameStatus();
+		void gameOver();
+		void gameWon();
 
 	private:
 		void _initMenuBar();

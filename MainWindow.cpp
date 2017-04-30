@@ -1,6 +1,10 @@
 #include "MainWindow.h"
 
+#include <iostream>
+
 #include <FL/Fl_Menu_Item.H>
+
+using namespace std;
 
 /**
  * Quit callback. Simply exit the program.
@@ -120,4 +124,29 @@ void MainWindow::_reshape(int w, int h) {
 	this->_statusBox->size((newW - (10 * 2)), 48);
 	this->_statusTimer->position((newW - (10 * 2) - 64), (30 + 18));
 
+}
+
+/**
+ * Called at regular intervals to update the mines and time counters.
+ */
+void MainWindow::updateGameStatus() {
+	// this->board->redraw();
+	this->redraw();
+}
+
+/**
+ * Called when the game has ended, because the user tried uncovering what was
+ * a mine and died.
+ */
+void MainWindow::gameOver() {
+	cout << "Game over lmao" << endl;
+
+	this->updateGameStatus();
+}
+
+/**
+ * Called when all mines have been marked, i.e. the game is won.
+ */
+void MainWindow::gameWon() {
+	this->updateGameStatus();
 }
