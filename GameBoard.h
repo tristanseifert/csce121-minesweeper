@@ -5,6 +5,7 @@
 #ifndef GAMEBOARD_H
 #define GAMEBOARD_H
 
+#include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_Box.H>
 
 #include <vector>
@@ -34,10 +35,16 @@ class GameBoard : public Fl_Box {
 
 		void generateMines(int mines);
 
-	protected:
-		void updateGrid();
+		virtual void draw();
 
 	private:
+		void updateGrid();
+
+		void _loadImages();
+
+	private:
+		Fl_PNG_Image *_imgMine;
+
 		MainWindow *_parent;
 
 		// size of the grid
