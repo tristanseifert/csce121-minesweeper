@@ -1,2 +1,6 @@
+# network resource forks
+._*
+
+# built stuff
 minesweeper
 minesweeper.dSYM
