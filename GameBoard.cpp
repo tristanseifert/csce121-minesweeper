@@ -3,10 +3,24 @@
 #include "MainWindow.h"
 
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <FL/fl_draw.H>
 
 using namespace std;
+
+// colors for mine counters, 0 through 8
+static const Fl_Color mineCountColors[] = {
+	FL_BLACK,					// 0
+	fl_rgb_color(1, 0, 254),	// 1
+	fl_rgb_color(1, 127, 1),	// 2
+	fl_rgb_color(254, 0, 0),	// 3
+	fl_rgb_color(1, 0, 128),	// 4
+	fl_rgb_color(129, 1, 2),	// 5
+	fl_rgb_color(0, 128, 129),	// 6
+	fl_rgb_color(0, 0, 0),		// 7
+	fl_rgb_color(128, 128, 128),// 8
+};
 
 /**
  * Initializes the game board.
@@ -23,7 +37,7 @@ GameBoard::GameBoard(int x, int y, int w, int h, MainWindow *parent) : Fl_Box(FL
 
 		for(int y = 0; y < h; y++) {
 			// cleared
-			this->storage[x].push_back(0);
+			this->storage[x].push_back(TileType());
 		}
 	}
 
@@ -59,8 +73,8 @@ void GameBoard::generateMines(int mines) {
 		int y = arc4random_uniform(this->gridH);
 
 		// is there already a mine here?
-		if(this->storage[x][y][MINE_BIT] != true) {
-			this->storage[x][y][MINE_BIT] = true;
+		if(this->storage[x][y].isMine != true) {
+			this->storage[x][y].isMine = true;
 			minesPlaced++;
 		}
 	}
@@ -89,7 +103,7 @@ void GameBoard::draw() {
 			int y = (j * CELL_SIZE) + this->y();
 
 			// draw box outline if not revealed
-			if(t[UNCOVERED_BIT] == false) {
+			if(t.uncovered == false) {
 				fl_draw_box(FL_UP_BOX, x, y, CELL_SIZE, CELL_SIZE, FL_GRAY);
 			}
 			// otherwise, draw a plain border
@@ -97,7 +111,7 @@ void GameBoard::draw() {
 				Fl_Color c = FL_DARK1;
 
 				// should the box be red?
-				if(t[RED_BIT]) {
+				if(t.bgRed) {
 					c = FL_RED;
 				}
 
@@ -105,10 +119,20 @@ void GameBoard::draw() {
 			}
 
 			// draw on top if uncovered OR debug mode is enabled
-			if(t[UNCOVERED_BIT] == true || this->debugMode) {
+			if(t.uncovered == true || this->debugMode) {
 				// is it a mine?
-				if(t[MINE_BIT] == true) {
+				if(t.isMine == true) {
 					this->_imgMine->draw(x, y);
+				}
+
+				// render the number
+				if(t.surroundingMines > 0) {
+					stringstream s;
+					s << t.surroundingMines;
+
+					fl_color(mineCountColors[t.surroundingMines]);
+					fl_font(FL_COURIER | FL_BOLD, 16);
+					fl_draw(s.str().c_str(), x + 2, y - fl_descent() + fl_height());
 				}
 			}
 		}
@@ -164,18 +188,69 @@ void GameBoard::uncoverCell(int x, int y) {
 	TileType &t = this->storage[x][y];
 
 	// set uncovered flag
-	t[UNCOVERED_BIT] = true;
+	t.uncovered = true;
 
 	// is this a mine?
-	if(t[MINE_BIT] == true) {
+	if(t.isMine == true) {
 		// lmao game over
 		this->_parent->gameOver();
 
-		t[RED_BIT] = true;
+		t.bgRed = true;
+	} else {
+		// calculate how many mines there are around this point
+		t.surroundingMines = this->minesAroundCell(x, y);
 	}
 
 	// force redraw
 	this->redraw();
+}
+
+/**
+ * Determines how many mines surround the cell at the given position.
+ *
+ * X X X
+ * X * X
+ * X X X
+ */
+int GameBoard::minesAroundCell(int x, int y) {
+	int mines = 0;
+
+	// top left
+	if((x - 1) >= 0 && (y - 1) >= 0) {
+		mines += (this->storage[(x - 1)][(y - 1)].isMine == true) ? 1 : 0;
+	}
+	// top middle
+	if(/*(x - 0) >= 0 &&*/ (y - 1) >= 0) {
+		mines += (this->storage[(x - 0)][(y - 1)].isMine == true) ? 1 : 0;
+	}
+	// top right
+	if((x + 1) < this->gridW && (y - 1) >= 0) {
+		mines += (this->storage[(x + 1)][(y - 1)].isMine == true) ? 1 : 0;
+	}
+
+	// middle left
+	if((x - 1) >= 0/* && (y - 1) >= 0*/) {
+		mines += (this->storage[(x - 1)][(y - 0)].isMine == true) ? 1 : 0;
+	}
+	// middle right
+	if((x + 1) < this->gridW/* && (y - 1) >= 0*/) {
+		mines += (this->storage[(x + 1)][(y - 0)].isMine == true) ? 1 : 0;
+	}
+
+	// bottom left
+	if((x - 1) >= 0 && (y + 1) < this->gridH) {
+		mines += (this->storage[(x - 1)][(y + 1)].isMine == true) ? 1 : 0;
+	}
+	// bottom middle
+	if(/*(x - 0) >= 0 &&*/ (y + 1) < this->gridH) {
+		mines += (this->storage[(x - 0)][(y + 1)].isMine == true) ? 1 : 0;
+	}
+	// bottom right
+	if((x + 1) < this->gridW && (y + 1) < this->gridH) {
+		mines += (this->storage[(x + 1)][(y + 1)].isMine == true) ? 1 : 0;
+	}
+
+	return mines;
 }
 
 /**
@@ -189,7 +264,7 @@ int GameBoard::getMinesRemaining() const {
 		for(int j = 0; j < this->gridH; j++) {
 			TileType t = this->storage[i][j];
 
-			if(t[MINE_BIT] == true && t[UNCOVERED_BIT] == false) {
+			if(t.isMine == true && t.uncovered == false) {
 				remaining++;
 			}
 		}

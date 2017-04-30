@@ -17,15 +17,25 @@ class MainWindow;
 static const int CELL_SIZE = 16;
 
 // is this cell a mine?
-static const int MINE_BIT = 0x0;
+static const int MINE_BIT = 0x00;
 // was this cell flagged?
-static const int FLAGGED_BIT = 0x1;
+static const int FLAGGED_BIT = 0x01;
 // the background of the cell should be red
-static const int RED_BIT = 0xD;
+static const int RED_BIT = 0x0D;
 // has this cell been uncovered?
-static const int UNCOVERED_BIT = 0xF;
+static const int UNCOVERED_BIT = 0x0F;
 
-typedef std::bitset<16> TileType;
+struct TileType {
+	bool uncovered = false;
+
+	bool isMine = false;
+	bool flagged = false;
+
+	bool bgRed = false;
+
+	// number of surrounding mines (show if non-negative)
+	int surroundingMines = -1;
+};
 
 class GameBoard : public Fl_Box {
 	friend class MainWindow;
@@ -52,6 +62,7 @@ class GameBoard : public Fl_Box {
 
 		void _loadImages();
 
+		int minesAroundCell(int x, int y);
 		void uncoverCell(int x, int y);
 
 	private:
