@@ -36,6 +36,7 @@ class GameBoard : public Fl_Box {
 		void generateMines(int mines);
 
 		virtual void draw();
+		virtual int handle(int);
 
 	private:
 		void updateGrid();

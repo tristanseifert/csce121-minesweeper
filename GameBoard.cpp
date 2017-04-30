@@ -2,6 +2,7 @@
 
 #include "MainWindow.h"
 
+#include <iostream>
 #include <stdexcept>
 #include <FL/fl_draw.H>
 
@@ -104,5 +105,47 @@ void GameBoard::draw() {
 				}
 			}
 		}
+	}
+}
+
+/**
+ * Handle user interaction with the board (we only care about click events)
+ */
+int GameBoard::handle(int event) {
+	// mouse down; make sure it's in the bounds
+	if(event == FL_PUSH) {
+		if(Fl::event_x() < this->x() || Fl::event_x() > (this->x() + this->w())) {
+			return 0;
+		} else if(Fl::event_y() < this->y() || Fl::event_y() > (this->y() + this->h())) {
+			return 0;
+		}
+
+		// click down inside bounds; we're interested.
+		return 1;
+	}
+	// the mouse was up inside the control
+	else if(event == FL_RELEASE) {
+		// figure out which grid cell it was in
+		int x = (Fl::event_x() - this->x()) / CELL_SIZE;
+		int y = (Fl::event_y() - this->y()) / CELL_SIZE;
+
+		// left button?
+		if(Fl::event_button() == FL_LEFT_MOUSE) {
+
+		}
+		// middle button?
+		else if(Fl::event_button() == FL_MIDDLE_MOUSE) {
+
+		}
+		// right button?
+		else if(Fl::event_button() == FL_RIGHT_MOUSE) {
+
+		}
+
+		return 1;
+	}
+	// unhandled event: bubble up to parent
+	else {
+		return Fl_Box::handle(event);
 	}
 }
