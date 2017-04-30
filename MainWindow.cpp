@@ -1,28 +1,28 @@
 #include "MainWindow.h"
 
-Fl_Menu_Item menuitems[] = {
-	{ "&File",              0, 0, 0, FL_SUBMENU },
-	{ "&New File",        0, (Fl_Callback *)nullptr },
-	{ "&Open File...",    FL_COMMAND + 'o', (Fl_Callback *)nullptr },
-	{ "&Insert File...",  FL_COMMAND + 'i', (Fl_Callback *)nullptr, 0, FL_MENU_DIVIDER },
-	{ "&Save File",       FL_COMMAND + 's', (Fl_Callback *)nullptr },
-	{ "Save File &As...", FL_COMMAND + FL_SHIFT + 's', (Fl_Callback *)nullptr, 0, FL_MENU_DIVIDER },
-	{ "New &View", FL_ALT + 'v', (Fl_Callback *)nullptr, 0 },
-	{ "&Close View", FL_COMMAND + 'w', (Fl_Callback *)nullptr, 0, FL_MENU_DIVIDER },
-	{ "E&xit", FL_COMMAND + 'q', (Fl_Callback *)nullptr, 0 },
+#include <FL/Fl_Menu_Item.H>
+
+/**
+ * Quit callback. Simply exit the program.
+ */
+static void quit_cb(Fl_Widget*, void*) {
+	exit(0);
+}
+
+
+// define menu items
+static const Fl_Menu_Item _menuItems[] = {
+	{ "&Game",              0, 0, 0, FL_SUBMENU },
+	{ "&New Game...",		FL_COMMAND + 'n', (Fl_Callback *)nullptr },
+	{ "&Reset Game", 		0, (Fl_Callback *)nullptr, 0, FL_MENU_DIVIDER },
+	{ "High Scores...", 	0, (Fl_Callback *)nullptr, 0, FL_MENU_DIVIDER },
+	{ "Toggle Debug Mode", 		0, (Fl_Callback *)nullptr, 0, FL_MENU_DIVIDER },
+	{ "E&xit", FL_COMMAND + 'q', (Fl_Callback *) quit_cb, 0 },
 	{ 0 },
-	{ "&Edit", 0, 0, 0, FL_SUBMENU },
-	{ "&Undo",       FL_COMMAND + 'z', (Fl_Callback *)nullptr, 0, FL_MENU_DIVIDER },
-	{ "Cu&t",        FL_COMMAND + 'x', (Fl_Callback *)nullptr },
-	{ "&Copy",       FL_COMMAND + 'c', (Fl_Callback *)nullptr },
-	{ "&Paste",      FL_COMMAND + 'v', (Fl_Callback *)nullptr },
-	{ "&Delete",     0, (Fl_Callback *) nullptr },
-	{ 0 },
-	{ "&Search", 0, 0, 0, FL_SUBMENU },
-	{ "&Find...",       FL_COMMAND + 'f', (Fl_Callback *)nullptr },
-	{ "F&ind Again",    FL_COMMAND + 'g', (Fl_Callback *)nullptr },
-	{ "&Replace...",    FL_COMMAND + 'r', (Fl_Callback *)nullptr },
-	{ "Re&place Again", FL_COMMAND + 't', (Fl_Callback *)nullptr },
+
+	{ "&Help", 0, 0, 0, FL_SUBMENU },
+	{ "About...", 			0, (Fl_Callback *)nullptr },
+
 	{ 0 },
 	{ 0 }
 };
@@ -35,15 +35,76 @@ MainWindow::MainWindow(int w, int h, const char* t) : Fl_Window(w, h) {
 
 	// create all the widgets lmao
 	this->_initMenuBar();
+	this->_initStatusBar();
 }
 
 /**
  * Initializes the menu bar
  */
 void MainWindow::_initMenuBar() {
+	this->_menuBar = new Fl_Menu_Bar(0, 0, this->w(), 30);
+	this->_menuBar->copy(_menuItems);
 
+	// add to window
+	this->add(this->_menuBar);
+}
+
+/**
+ * Initializes the status bar along the top of the window.
+ */
+void MainWindow::_initStatusBar() {
+	this->_statusBox = new Fl_Box(FL_EMBOSSED_BOX, 10, (30 + 10), 32, 32, nullptr);
+
+	// add to window
+	this->add(this->_statusBox);
 }
 
 MainWindow::~MainWindow() {
 
+}
+
+/**
+ * Called after the window has been shown.
+ */
+void MainWindow::startGame() {
+	this->_newGameCb();
+}
+
+/**
+ * Queries the user to determine what size the board should be.
+ */
+void MainWindow::_newGameCb() {
+	this->setupGameSized(16, 16);
+}
+
+/**
+ * Set up a game with a grid of the given size. This will reshape the window and
+ * all controls in it.
+ */
+void MainWindow::setupGameSized(int w, int h) {
+	// clear any old shit
+	delete this->board;
+
+	// reshape window
+	this->_reshape(w, h);
+
+	// create board
+	int boardY = (30 + 10) + (48 + 10);
+
+	this->board = new GameBoard(10, boardY, w, h, this);
+	this->add(this->board);
+}
+
+/**
+ * Reshapes the window and existing controls, given a board size.
+ */
+void MainWindow::_reshape(int w, int h) {
+	// calculate the total size of the window
+	int newW = (w * CELL_SIZE) + (10 * 2);
+	int newH = (30 + 10) + (48 + 10) + ((h * CELL_SIZE) + 10);
+
+	this->size(newW, newH);
+
+	// reshape status bar
+	this->_statusBox->size((newW - (10 * 2)), 48);
 }

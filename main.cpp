@@ -10,6 +10,8 @@ int main(int argc, char *argv[]) {
 	// show window
 	w.show(argc, argv);
 
+	w.startGame();
+
 	// start main loop for FLTK
 	return Fl::run();
 }
