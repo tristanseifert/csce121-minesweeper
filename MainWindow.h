@@ -28,15 +28,17 @@ class MainWindow : public Fl_Window {
 		void gameOver();
 		void gameWon();
 
+		void _newGameCb(bool quitIfCanceled = false);
+
 	private:
 		friend void timer_cb(void *);
 		friend void toggle_debug_cb(Fl_Widget *, void *);
+		friend void menu_new_game_cb(Fl_Widget *, void *);
 
 	private:
 		void _initMenuBar();
 		void _initStatusBar();
 
-		void _newGameCb(bool quitIfCanceled = false);
 		void _resetGame();
 
 		void _reshape(int w, int h);

@@ -1,5 +1,15 @@
 #include "NewGameDialog.h"
 
+static const int difficultyData[][3] = {
+//   W      H       Mines
+    {9,     9,      10},
+    {16,    16,     40},
+    {16,    30,     99},
+
+// this exists to prevent errors
+    {0,     0,      0},
+};
+
 /**
  * Cancel callback (simply close modal and set state)
  */
@@ -18,7 +28,46 @@ void new_game_cb(Fl_Widget *, void *ctx) {
 	NewGameDialog *m = static_cast<NewGameDialog *>(ctx);
     m->returnVal = 0;
 
+    // fetch difficulty values from array
+    if(m->diff != NewGameDialog::Custom) {
+        m->boardW = difficultyData[m->diff][0];
+        m->boardH = difficultyData[m->diff][1];
+        m->mines = difficultyData[m->diff][2];
+    } else {
+        m->boardW = m->_custW->value();
+        m->boardH = m->_custH->value();
+        m->mines = m->_custMines->value();
+    }
+
     m->hide();
+}
+
+/**
+ * Radio button callback: this enables/disables the spinners as needed.
+ */
+void difficulty_radio_cb(Fl_Widget *, void *ctx) {
+    NewGameDialog *m = static_cast<NewGameDialog *>(ctx);
+
+    if(m->_radBeginner->value() == 1) {
+        m->diff = NewGameDialog::Beginner;
+    } else if(m->_radIntermediate->value() == 1) {
+        m->diff = NewGameDialog::Intermediate;
+    } else if(m->_radExpert->value() == 1) {
+        m->diff = NewGameDialog::Expert;
+    } else if(m->_radCustom->value() == 1) {
+        m->diff = NewGameDialog::Custom;
+    }
+
+    // activate spinners if custom level
+    if(m->diff == NewGameDialog::Custom) {
+        m->_custW->activate();
+        m->_custH->activate();
+        m->_custMines->activate();
+    } else {
+        m->_custW->deactivate();
+        m->_custH->deactivate();
+        m->_custMines->deactivate();
+    }
 }
 
 /**
@@ -49,15 +98,19 @@ NewGameDialog::NewGameDialog() : Fl_Window(300, 240, "New Game") {
     // create radio buttons
     this->_radBeginner = new Fl_Radio_Round_Button(10, 10, (300 - (10 * 2)), 25, "Beginner");
     this->_radBeginner->setonly();
+    this->_radBeginner->callback(difficulty_radio_cb, this);
     this->_radioGroup->add(this->_radBeginner);
 
     this->_radIntermediate = new Fl_Radio_Round_Button(10, 35, (300 - (10 * 2)), 25, "Intermediate");
+    this->_radIntermediate->callback(difficulty_radio_cb, this);
     this->_radioGroup->add(this->_radIntermediate);
 
     this->_radExpert = new Fl_Radio_Round_Button(10, 60, (300 - (10 * 2)), 25, "Expert");
+    this->_radExpert->callback(difficulty_radio_cb, this);
     this->_radioGroup->add(this->_radExpert);
 
     this->_radCustom = new Fl_Radio_Round_Button(10, 85, (300 - (10 * 2)), 25, "Custom");
+    this->_radCustom->callback(difficulty_radio_cb, this);
     this->_radioGroup->add(this->_radCustom);
 
     // create spinners
@@ -75,6 +128,10 @@ NewGameDialog::NewGameDialog() : Fl_Window(300, 240, "New Game") {
     this->_custMines->minimum(0);
     this->_custMines->maximum(256);
     this->add(this->_custMines);
+
+    this->_custW->deactivate();
+    this->_custH->deactivate();
+    this->_custMines->deactivate();
 
     // add radio group
     this->_radioGroup->end();

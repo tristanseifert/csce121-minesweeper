@@ -31,9 +31,18 @@ class NewGameDialog : public Fl_Window {
             return this->mines;
         }
 
+    public:
+        enum Difficulty {
+            Beginner    = 0,
+            Intermediate= 1,
+            Expert      = 2,
+            Custom      = 3
+        };
+
     private:
         friend void cancel_cb(Fl_Widget *, void *);
         friend void new_game_cb(Fl_Widget *, void *);
+        friend void difficulty_radio_cb(Fl_Widget *, void *);
 
     private:
         Fl_Button *_newGameBtn;
@@ -50,7 +59,10 @@ class NewGameDialog : public Fl_Window {
         Fl_Spinner *_custH;
         Fl_Spinner *_custMines;
 
+    private:
         int returnVal = 0;
+
+        Difficulty diff = Beginner;
 
         int boardW, boardH, mines;
 };

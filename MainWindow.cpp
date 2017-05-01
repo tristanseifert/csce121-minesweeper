@@ -25,6 +25,15 @@ void toggle_debug_cb(Fl_Widget *, void *ctx) {
 }
 
 /**
+ * New game callback: this will open the "New Game" dialog.
+ */
+void menu_new_game_cb(Fl_Widget *, void *ctx) {
+	MainWindow *m = static_cast<MainWindow *>(ctx);
+
+	m->_newGameCb();
+}
+
+/**
  * Timer callback, called every second.
  */
 void timer_cb(void *ctx) {
@@ -53,8 +62,7 @@ void MainWindow::_initMenuBar() {
 	// menu items
 	static const Fl_Menu_Item _menuItems[] = {
 		{ "&Game", 0, 0, 0, FL_SUBMENU },
-		{ "&New Game...", FL_COMMAND + 'n', (Fl_Callback *) nullptr, this },
-		{ "&Reset Game", 0, (Fl_Callback *)nullptr, this, FL_MENU_DIVIDER },
+		{ "&New Game...", FL_COMMAND + 'n', (Fl_Callback *) menu_new_game_cb, this },
 		{ "High Scores...", 0, (Fl_Callback *)nullptr, this, FL_MENU_DIVIDER },
 		{ "Toggle Debug Mode", 0, (Fl_Callback *)toggle_debug_cb, this, FL_MENU_DIVIDER },
 		{ "E&xit", FL_COMMAND + 'q', (Fl_Callback *) quit_cb, this },
@@ -82,13 +90,13 @@ void MainWindow::_initStatusBar() {
 	this->_statusBox = new Fl_Box(FL_EMBOSSED_BOX, 10, (30 + 10), 32, 32, nullptr);
 
 	// mines remaining (left)
-	this->_statusMines = new Fl_Box(FL_BORDER_BOX, 20, (30 + 18), 64, 32, "Mines");
+	this->_statusMines = new Fl_Box(FL_BORDER_BOX, 20, (30 + 18), 48, 32, "Mines");
 
 	// game status
 	this->_statusImage = new Fl_Box(FL_BORDER_BOX, 100, (30 + 18), 32, 32, nullptr);
 
 	// timer (right)
-	this->_statusTimer = new Fl_Box(FL_BORDER_BOX, 200, (30 + 18), 64, 32, "Timer");
+	this->_statusTimer = new Fl_Box(FL_BORDER_BOX, 200, (30 + 18), 48, 32, "Timer");
 
 	// add to window
 	this->add(this->_statusBox);
@@ -132,7 +140,13 @@ void MainWindow::_newGameCb(bool quitIfCanceled) {
 		exit(0);
 	}
 
-	// this->setupGameSized(16, 16);
+	// set up the game
+	int w = this->newGameDialog->getBoardSizeW();
+	int h = this->newGameDialog->getBoardSizeH();
+	int mines = this->newGameDialog->getNumMines();
+
+	this->setupGameSized(w, h);
+	this->board->generateMines(mines);
 }
 
 /**
@@ -160,7 +174,6 @@ void MainWindow::setupGameSized(int w, int h) {
 	int boardY = (30 + 10) + (48 + 10);
 
 	this->board = new GameBoard(10, boardY, w, h, this);
-	this->board->generateMines(48);
 
 	this->add(this->board);
 
@@ -185,7 +198,7 @@ void MainWindow::_reshape(int w, int h) {
 	// reshape status bar
 	this->_statusBox->size((newW - (10 * 2)), 48);
 	this->_statusImage->position(((newW / 2) - 16), 48);
-	this->_statusTimer->position((newW - (10 * 2) - 64), (30 + 18));
+	this->_statusTimer->position((newW - (10 * 2) - 48), (30 + 18));
 
 }
 
