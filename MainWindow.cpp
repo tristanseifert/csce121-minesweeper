@@ -84,7 +84,7 @@ void MainWindow::_initMenuBar() {
 		{ "&Game", 0, 0, 0, FL_SUBMENU },
 		{ "&New Game...", FL_COMMAND + 'n', (Fl_Callback *) menu_new_game_cb, this },
 		{ "High Scores...", 0, (Fl_Callback *) show_high_scores_cb, this, FL_MENU_DIVIDER },
-		{ "Toggle Debug Mode", 0, (Fl_Callback *)toggle_debug_cb, this, FL_MENU_DIVIDER },
+		{ "Toggle Debug Mode", FL_SHIFT + 'd', (Fl_Callback *)toggle_debug_cb, this, FL_MENU_DIVIDER },
 		{ "E&xit", FL_COMMAND + 'q', (Fl_Callback *) quit_cb, this },
 		{ 0 },
 
