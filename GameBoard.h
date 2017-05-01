@@ -30,6 +30,7 @@ struct TileType {
 
 	bool isMine = false;
 	bool flagged = false;
+	bool question = false;
 
 	bool bgRed = false;
 
@@ -72,10 +73,13 @@ class GameBoard : public Fl_Box {
 		void _loadImages();
 
 		int minesAroundCell(int x, int y);
+
 		void uncoverCell(int x, int y, bool isRecursive = false);
+		void flagQuestion(int x, int y);
 
 	private:
 		Fl_PNG_Image *_imgMine;
+		Fl_PNG_Image *_imgFlag;
 
 		MainWindow *_parent;
 

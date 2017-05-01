@@ -56,6 +56,7 @@ GameBoard::~GameBoard() {
  */
 void GameBoard::_loadImages() {
 	this->_imgMine = new Fl_PNG_Image("images/mine.png");
+	this->_imgFlag = new Fl_PNG_Image("images/flag.png");
 }
 
 /**
@@ -136,6 +137,17 @@ void GameBoard::draw() {
 					fl_draw(s.str().c_str(), x + 2, y - fl_descent() + fl_height());
 				}
 			}
+
+			// is it flagged?
+			if(t.flagged == true) {
+				this->_imgFlag->draw(x, y);
+			}
+			// is it a question mark?
+			if(t.question == true) {
+				fl_color(FL_BLACK);
+				fl_font(FL_COURIER | FL_BOLD, 16);
+				fl_draw("?", x + 2, y - fl_descent() + fl_height());
+			}
 		}
 	}
 }
@@ -171,8 +183,10 @@ int GameBoard::handle(int event) {
 		}
 		// right button?
 		else if(Fl::event_button() == FL_RIGHT_MOUSE) {
-
+			this->flagQuestion(x, y);
 		}
+
+		this->_parent->updateGameStatus();
 
 		return 1;
 	}
@@ -188,12 +202,18 @@ int GameBoard::handle(int event) {
 void GameBoard::uncoverCell(int x, int y, bool isRecursive) {
 	TileType &t = this->storage[x][y];
 
+	// check if this tile is flagged
+	if(t.flagged == true) {
+		return;
+	}
+
 	// check if this tile has been uncovered before
 	if(std::find(this->uncoveredCells.begin(), this->uncoveredCells.end(), Point(x, y)) != this->uncoveredCells.end()) {
 		return;
 	}
 
 	this->uncoveredCells.push_back(Point(x, y));
+
 
 	// set uncovered flag
 	t.uncovered = true;
@@ -246,7 +266,37 @@ void GameBoard::uncoverCell(int x, int y, bool isRecursive) {
 		}
 	}
 
-	// force redraw
+
+	// force redraw of display
+	this->redraw();
+}
+
+/**
+ * Flags a cell, or turns it into a question mark if it's already flagged.
+ */
+void GameBoard::flagQuestion(int x, int y) {
+	TileType &t = this->storage[x][y];
+
+	// return if it's already uncovered
+	if(t.uncovered == true) {
+		return;
+	}
+
+	// if it's a question mark, remove it
+	if(t.question == true) {
+		t.question = false;
+	}
+	// if it's not flagged, flag it
+	else if(t.flagged == false) {
+		t.flagged = true;
+	}
+	// if it's flagged, turn it into a question mark
+	else {
+		t.flagged = false;
+		t.question = true;
+	}
+
+	// force redraw of display
 	this->redraw();
 }
 
@@ -301,12 +351,24 @@ int GameBoard::minesAroundCell(int x, int y) {
 int GameBoard::getMinesRemaining() const {
 	int remaining = 0;
 
+	// calculate the number of mines
 	for(int i = 0; i < this->gridW; i++) {
 		for(int j = 0; j < this->gridH; j++) {
 			TileType t = this->storage[i][j];
 
-			if(t.isMine == true && t.uncovered == false) {
+			if(t.isMine == true) {
 				remaining++;
+			}
+		}
+	}
+
+	// subtract the number of uncovered/flagged mines
+	for(int i = 0; i < this->gridW; i++) {
+		for(int j = 0; j < this->gridH; j++) {
+			TileType t = this->storage[i][j];
+
+			if(t.flagged == true || (t.isMine == true && t.uncovered == true)) {
+				remaining--;
 			}
 		}
 	}

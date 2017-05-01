@@ -1,6 +1,8 @@
 #include "MainWindow.h"
 
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 
 #include <FL/Fl_Menu_Item.H>
 
@@ -108,6 +110,9 @@ void MainWindow::setupGameSized(int w, int h) {
 	this->board->generateMines(48);
 
 	this->add(this->board);
+
+	// update game status
+	this->updateGameStatus();
 }
 
 /**
@@ -130,6 +135,14 @@ void MainWindow::_reshape(int w, int h) {
  * Called at regular intervals to update the mines and time counters.
  */
 void MainWindow::updateGameStatus() {
+	// update mines counter
+	stringstream ss;
+	ss << setfill('0') << setw(3) << this->board->getMinesRemaining();
+
+	// cout << ss.str() << endl;
+	this->_statusMines->copy_label(ss.str().c_str());
+
+	// redraw image
 	// this->board->redraw();
 	this->redraw();
 }
