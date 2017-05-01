@@ -60,6 +60,8 @@ class GameBoard : public Fl_Box {
 
 		void generateMines(int mines);
 
+		void toggleDebug();
+
 		virtual void draw();
 		virtual int handle(int);
 
@@ -78,8 +80,11 @@ class GameBoard : public Fl_Box {
 		void uncoverCell(int x, int y, bool isRecursive = false);
 		void flagQuestion(int x, int y);
 
+		void _checkWinStatus();
+
 	private:
 		Fl_PNG_Image *_imgMine;
+		Fl_PNG_Image *_imgMineCrossed;
 		Fl_PNG_Image *_imgFlag;
 
 		MainWindow *_parent;
@@ -91,7 +96,8 @@ class GameBoard : public Fl_Box {
 		std::vector<std::vector<TileType>> storage;
 
 		// when set, all mines are displayed
-		bool debugMode = true;
+		bool debugMode = false;
+		bool revealMines = false;
 
 		// all cells uncovered
 		std::vector<Point> uncoveredCells;

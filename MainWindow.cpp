@@ -11,8 +11,17 @@ using namespace std;
 /**
  * Quit callback. Simply exit the program.
  */
-static void quit_cb(Fl_Widget*, void*) {
+void quit_cb(Fl_Widget *, void *ctx) {
 	exit(0);
+}
+
+/**
+ * Debug mode toggle callback
+ */
+void toggle_debug_cb(Fl_Widget *, void *ctx) {
+	MainWindow *m = static_cast<MainWindow *>(ctx);
+
+	m->board->toggleDebug();
 }
 
 /**
@@ -25,23 +34,6 @@ void timer_cb(void *ctx) {
 	Fl::repeat_timeout(1.0, timer_cb, ctx);
 }
 
-
-// define menu items
-static const Fl_Menu_Item _menuItems[] = {
-	{ "&Game",              0, 0, 0, FL_SUBMENU },
-	{ "&New Game...",		FL_COMMAND + 'n', (Fl_Callback *)nullptr },
-	{ "&Reset Game", 		0, (Fl_Callback *)nullptr, 0, FL_MENU_DIVIDER },
-	{ "High Scores...", 	0, (Fl_Callback *)nullptr, 0, FL_MENU_DIVIDER },
-	{ "Toggle Debug Mode", 		0, (Fl_Callback *)nullptr, 0, FL_MENU_DIVIDER },
-	{ "E&xit", FL_COMMAND + 'q', (Fl_Callback *) quit_cb, 0 },
-	{ 0 },
-
-	{ "&Help", 0, 0, 0, FL_SUBMENU },
-	{ "About...", 			0, (Fl_Callback *)nullptr },
-
-	{ 0 },
-	{ 0 }
-};
 
 /**
  * Initialize main window.
@@ -58,6 +50,24 @@ MainWindow::MainWindow(int w, int h, const char* t) : Fl_Window(w, h) {
  * Initializes the menu bar
  */
 void MainWindow::_initMenuBar() {
+	// menu items
+	static const Fl_Menu_Item _menuItems[] = {
+		{ "&Game", 0, 0, 0, FL_SUBMENU },
+		{ "&New Game...", FL_COMMAND + 'n', (Fl_Callback *) nullptr, this },
+		{ "&Reset Game", 0, (Fl_Callback *)nullptr, this, FL_MENU_DIVIDER },
+		{ "High Scores...", 0, (Fl_Callback *)nullptr, this, FL_MENU_DIVIDER },
+		{ "Toggle Debug Mode", 0, (Fl_Callback *)toggle_debug_cb, this, FL_MENU_DIVIDER },
+		{ "E&xit", FL_COMMAND + 'q', (Fl_Callback *) quit_cb, this },
+		{ 0 },
+
+		{ "&Help", 0, 0, 0, FL_SUBMENU },
+		{ "About...", 0, (Fl_Callback *) nullptr, this },
+
+		{ 0 },
+		{ 0 }
+	};
+
+	// copy the menu items and create the menu bar
 	this->_menuBar = new Fl_Menu_Bar(0, 0, this->w(), 30);
 	this->_menuBar->copy(_menuItems);
 
@@ -72,16 +82,25 @@ void MainWindow::_initStatusBar() {
 	this->_statusBox = new Fl_Box(FL_EMBOSSED_BOX, 10, (30 + 10), 32, 32, nullptr);
 
 	// mines remaining (left)
-	this->_statusMines = new Fl_Box(FL_BORDER_BOX, 20, (30 + 18), 64, 32, "099");
+	this->_statusMines = new Fl_Box(FL_BORDER_BOX, 20, (30 + 18), 64, 32, "Mines");
+
+	// game status
+	this->_statusImage = new Fl_Box(FL_BORDER_BOX, 100, (30 + 18), 32, 32, nullptr);
 
 	// timer (right)
-	this->_statusTimer = new Fl_Box(FL_BORDER_BOX, 200, (30 + 18), 64, 32, "000");
+	this->_statusTimer = new Fl_Box(FL_BORDER_BOX, 200, (30 + 18), 64, 32, "Timer");
 
 	// add to window
 	this->add(this->_statusBox);
 
 	this->add(this->_statusMines);
+	this->add(this->_statusImage);
 	this->add(this->_statusTimer);
+
+	// load images
+	this->_imgOk = new Fl_PNG_Image("images/faces_05.png");
+	this->_imgWon = new Fl_PNG_Image("images/faces_02.png");
+	this->_imgDead = new Fl_PNG_Image("images/faces_03.png");
 }
 
 MainWindow::~MainWindow() {
@@ -132,6 +151,7 @@ void MainWindow::setupGameSized(int w, int h) {
 	this->add(this->board);
 
 	// update game status
+	this->_statusImage->image(this->_imgOk);
 	this->updateGameStatus();
 
 	// start timer
@@ -150,6 +170,7 @@ void MainWindow::_reshape(int w, int h) {
 
 	// reshape status bar
 	this->_statusBox->size((newW - (10 * 2)), 48);
+	this->_statusImage->position(((newW / 2) - 16), 48);
 	this->_statusTimer->position((newW - (10 * 2) - 64), (30 + 18));
 
 }
@@ -181,6 +202,8 @@ void MainWindow::updateGameStatus() {
 void MainWindow::gameOver() {
 	cout << "Game over lmao" << endl;
 
+	this->_statusImage->image(this->_imgDead);
+
 	this->_resetGame();
 	this->updateGameStatus();
 }
@@ -189,6 +212,8 @@ void MainWindow::gameOver() {
  * Called when all mines have been marked, i.e. the game is won.
  */
 void MainWindow::gameWon() {
+	this->_statusImage->image(this->_imgWon);
+
 	this->_resetGame();
 	this->updateGameStatus();
 }

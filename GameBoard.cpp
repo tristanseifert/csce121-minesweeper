@@ -6,6 +6,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
+
 #include <FL/fl_draw.H>
 
 using namespace std;
@@ -54,11 +55,24 @@ GameBoard::~GameBoard() {
 }
 
 /**
+ * Toggle the debug mode
+ */
+void GameBoard::toggleDebug() {
+	this->debugMode = !this->debugMode;
+
+	cout << "Debug mode status: " << this->debugMode << endl;
+
+	// redraw
+	this->redraw();
+}
+
+/**
  * Loads images (flag, question mark, mines, etc.) from disk so they can be
  * easily drawn later.
  */
 void GameBoard::_loadImages() {
 	this->_imgMine = new Fl_PNG_Image("images/mine.png");
+	this->_imgMineCrossed = new Fl_PNG_Image("images/mine_crossed.png");
 	this->_imgFlag = new Fl_PNG_Image("images/flag.png");
 }
 
@@ -124,10 +138,12 @@ void GameBoard::draw() {
 			}
 
 			// draw on top if uncovered OR debug mode is enabled
-			if(t.uncovered == true || this->debugMode) {
+			if(t.uncovered == true || (this->debugMode || this->revealMines)) {
 				// is it a mine?
 				if(t.isMine == true) {
 					this->_imgMine->draw(x, y);
+				} else if(t.isMine == false && t.flagged == true && (this->debugMode || this->revealMines)) {
+					this->_imgMineCrossed->draw(x, y);
 				}
 
 				// render the number
@@ -142,11 +158,11 @@ void GameBoard::draw() {
 			}
 
 			// is it flagged?
-			if(t.flagged == true) {
+			if(t.flagged == true && (!this->revealMines)) {
 				this->_imgFlag->draw(x, y);
 			}
 			// is it a question mark?
-			if(t.question == true) {
+			if(t.question == true && (!this->revealMines)) {
 				fl_color(FL_BLACK);
 				fl_font(FL_COURIER | FL_BOLD, 16);
 				fl_draw("?", x + 2, y - fl_descent() + fl_height());
@@ -189,6 +205,7 @@ int GameBoard::handle(int event) {
 			this->flagQuestion(x, y);
 		}
 
+		this->_checkWinStatus();
 		this->_parent->updateGameStatus();
 
 		return 1;
@@ -225,6 +242,7 @@ void GameBoard::uncoverCell(int x, int y, bool isRecursive) {
 	if(t.isMine == true && !isRecursive) {
 		// lmao game over
 		this->_parent->gameOver();
+		this->revealMines = true;
 
 		t.bgRed = true;
 	} else {
@@ -377,4 +395,32 @@ int GameBoard::getMinesRemaining() const {
 	}
 
 	return remaining;
+}
+
+/**
+ * Checks whether we've won the game: if all non-mine tiles have been uncovered
+ * we've won.
+ */
+void GameBoard::_checkWinStatus() {
+	for(int i = 0; i < this->gridW; i++) {
+		for(int j = 0; j < this->gridH; j++) {
+			TileType t = this->storage[i][j];
+
+			// if this is a mine, continue
+			if(t.isMine == true) {
+				continue;
+			} else {
+				// is this tile uncovered? if so, we're done
+				if(t.uncovered == false) {
+					return;
+				}
+			}
+		}
+	}
+
+	// if we drop down here, we've won
+	cout << "Won game - all mines are flagged" << endl;
+
+	this->revealMines = true;
+	this->_parent->gameWon();
 }

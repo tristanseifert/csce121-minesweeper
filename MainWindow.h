@@ -8,6 +8,7 @@
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/Fl_Box.H>
+#include <FL/Fl_PNG_Image.H>
 
 #include "GameBoard.h"
 
@@ -25,7 +26,9 @@ class MainWindow : public Fl_Window {
 		void gameOver();
 		void gameWon();
 
+	private:
 		friend void timer_cb(void *);
+		friend void toggle_debug_cb(Fl_Widget *, void *);
 
 	private:
 		void _initMenuBar();
@@ -38,11 +41,17 @@ class MainWindow : public Fl_Window {
 
 		void setupGameSized(int w, int h);
 
+	private:
 		Fl_Menu_Bar *_menuBar;
 
 		Fl_Box *_statusBox;
+		Fl_Box *_statusImage;
 		Fl_Box *_statusMines;
 		Fl_Box *_statusTimer;
+
+		Fl_PNG_Image *_imgOk;
+		Fl_PNG_Image *_imgWon;
+		Fl_PNG_Image *_imgDead;
 
 		GameBoard *board;
 };
