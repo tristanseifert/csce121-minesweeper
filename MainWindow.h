@@ -11,9 +11,11 @@
 #include <FL/Fl_PNG_Image.H>
 
 #include "GameBoard.h"
+#include "NewGameDialog.h"
 
 class MainWindow : public Fl_Window {
 	friend class GameBoard;
+	friend class NewGameDialog;
 
 	public:
     	MainWindow(int w, int h, const char* t);
@@ -34,7 +36,7 @@ class MainWindow : public Fl_Window {
 		void _initMenuBar();
 		void _initStatusBar();
 
-		void _newGameCb();
+		void _newGameCb(bool quitIfCanceled = false);
 		void _resetGame();
 
 		void _reshape(int w, int h);
@@ -52,6 +54,8 @@ class MainWindow : public Fl_Window {
 		Fl_PNG_Image *_imgOk;
 		Fl_PNG_Image *_imgWon;
 		Fl_PNG_Image *_imgDead;
+
+		NewGameDialog *newGameDialog = nullptr;
 
 		GameBoard *board;
 };

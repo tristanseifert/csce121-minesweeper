@@ -111,14 +111,28 @@ MainWindow::~MainWindow() {
  * Called after the window has been shown.
  */
 void MainWindow::startGame() {
-	this->_newGameCb();
+	this->_newGameCb(true);
 }
 
 /**
  * Queries the user to determine what size the board should be.
  */
-void MainWindow::_newGameCb() {
-	this->setupGameSized(16, 16);
+void MainWindow::_newGameCb(bool quitIfCanceled) {
+	this->newGameDialog = new NewGameDialog();
+
+	// show and wait for it to be closed
+	this->newGameDialog->show();
+	while(this->newGameDialog->shown()) {
+		Fl::wait();
+	}
+
+	if(this->newGameDialog->getModalState() == 0) {
+		cout << "Starting new game..." << endl;
+	} else if(quitIfCanceled == true) {
+		exit(0);
+	}
+
+	// this->setupGameSized(16, 16);
 }
 
 /**
