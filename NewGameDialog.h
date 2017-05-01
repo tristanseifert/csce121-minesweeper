@@ -17,6 +17,15 @@ class NewGameDialog : public Fl_Window {
         NewGameDialog();
         ~NewGameDialog();
 
+    public:
+        enum Difficulty {
+            Beginner    = 0,
+            Intermediate= 1,
+            Expert      = 2,
+            Custom      = 3
+        };
+
+    public:
         int getModalState() const {
             return this->returnVal;
         }
@@ -31,13 +40,9 @@ class NewGameDialog : public Fl_Window {
             return this->mines;
         }
 
-    public:
-        enum Difficulty {
-            Beginner    = 0,
-            Intermediate= 1,
-            Expert      = 2,
-            Custom      = 3
-        };
+        Difficulty getDifficulty() const {
+            return this->diff;
+        }
 
     private:
         friend void cancel_cb(Fl_Widget *, void *);

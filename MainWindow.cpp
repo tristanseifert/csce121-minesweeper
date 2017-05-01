@@ -5,6 +5,7 @@
 #include <iomanip>
 
 #include <FL/Fl_Menu_Item.H>
+#include <FL/fl_ask.H>
 
 using namespace std;
 
@@ -147,6 +148,10 @@ void MainWindow::_newGameCb(bool quitIfCanceled) {
 
 	this->setupGameSized(w, h);
 	this->board->generateMines(mines);
+
+	// get whether we can store a high score
+	this->canSaveHighScore = (this->newGameDialog->getDifficulty() != NewGameDialog::Custom);
+	this->highScoreLevel = this->newGameDialog->getDifficulty();
 }
 
 /**
@@ -169,6 +174,7 @@ void MainWindow::setupGameSized(int w, int h) {
 
 	// reshape window
 	this->_reshape(w, h);
+	this->_menuBar->size(this->w(), 30);
 
 	// create board
 	int boardY = (30 + 10) + (48 + 10);
@@ -233,6 +239,13 @@ void MainWindow::gameOver() {
 
 	this->_resetGame();
 	this->updateGameStatus();
+
+	Fl::wait();
+	fl_beep();
+
+	// display message
+	fl_message_title("Game Over!");
+	fl_message("Sorry, you lost. Try harder next time.");
 }
 
 /**
@@ -243,4 +256,6 @@ void MainWindow::gameWon() {
 
 	this->_resetGame();
 	this->updateGameStatus();
+
+	// if this game wasn't a custom game,
 }
