@@ -1,6 +1,9 @@
 # network resource forks
 ._*
 
+# extracted resources
+winmine_resources/
+
 # built stuff
 minesweeper
 minesweeper.dSYM
