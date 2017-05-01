@@ -36,6 +36,7 @@ class MainWindow : public Fl_Window {
 		friend void toggle_debug_cb(Fl_Widget *, void *);
 		friend void menu_new_game_cb(Fl_Widget *, void *);
 		friend void show_high_scores_cb(Fl_Widget *, void *);
+		friend void show_about_cb(Fl_Widget *, void *);
 
 	private:
 		void _initMenuBar();
@@ -43,6 +44,7 @@ class MainWindow : public Fl_Window {
 
 		void _resetGame();
 		void _showHighScores();
+		void _openAboutDialog();
 
 		void _reshape(int w, int h);
 

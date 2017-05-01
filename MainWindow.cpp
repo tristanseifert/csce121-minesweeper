@@ -45,6 +45,15 @@ void show_high_scores_cb(Fl_Widget *, void *ctx) {
 }
 
 /**
+ * Opens the "about" dialog.
+ */
+void show_about_cb(Fl_Widget *, void *ctx) {
+	MainWindow *m = static_cast<MainWindow *>(ctx);
+
+	m->_openAboutDialog();
+}
+
+/**
  * Timer callback, called every second.
  */
 void timer_cb(void *ctx) {
@@ -80,7 +89,7 @@ void MainWindow::_initMenuBar() {
 		{ 0 },
 
 		{ "&Help", 0, 0, 0, FL_SUBMENU },
-		{ "About...", 0, (Fl_Callback *) nullptr, this },
+		{ "About...", 0, (Fl_Callback *) show_about_cb, this },
 
 		{ 0 },
 		{ 0 }
@@ -145,6 +154,14 @@ void MainWindow::_showHighScores() {
 	fl_message("Current high scores:\n\nBeginner:\t%s\t%i\nIntermediate:"
 			   "\t%s\t%i\nExpert:\t%s\t%i\n", h1.name.c_str(), h1.time,
 		   	   h2.name.c_str(), h2.time, h3.name.c_str(), h3.time);
+}
+
+/**
+ * Displays an about dialog.
+ */
+void MainWindow::_openAboutDialog() {
+	fl_message_title("About");
+	fl_message("Minesweeper (CSCE 112)\n\nBy Blake Powell (-501), Tristan Seifert (-502)");
 }
 
 /**
