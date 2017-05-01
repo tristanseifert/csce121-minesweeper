@@ -1,0 +1,6 @@
+*.aux
+*.log
+*.synctex.gz
+
+# also ignore PDFs: they can be built from the tex files
+*.pdf

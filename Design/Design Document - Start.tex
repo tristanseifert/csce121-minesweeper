@@ -1,0 +1,132 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.74in]{geometry}
+\geometry{letterpaper}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{dejavu}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+
+\chead{\huge\scshape\bfseries Minesweeper Initial Design}
+\rhead{Tristan Seifert\\ CSCE 121-502}
+
+\lstset{
+	numbers=left,
+	tabsize=4,
+	numberfirstline=true,
+	basicstyle=\footnotesize\ttfamily,
+	breaklines=true
+}
+
+\begin{document}
+\section{Overall Design}
+The program will be divided into four parts:
+
+\begin{itemize}
+	\item \textbf{Main Window}: This is an FLTK window that contains all the widgets for the game, and handles all user input/game status.
+	\item \textbf{Game Board}: A custom FLTK widget that draws a grid of cells, and contains the data for the bombs, flags, etc.
+	\item \textbf{Persistence}: Stores the high scores in a file in the program directory, and loads them when the game is started again.
+	\item \textbf{New Game Dialog}: Allows the user to select which difficulty level they want to play the game at, or use a custom grid size and mine count.
+\end{itemize}
+
+\section{Distribute Mines}
+This algorithm will place $n$ mines randomly throughout the grid.
+
+\begin{lstlisting}[frame=single,language=C++]
+void generateMines(int n) {
+	if(n > (this->gridW * this->gridH)) {
+		throw runtime_error("cannot fill more mines than there are cells");
+	}
+
+	int minesPlaced = 0;
+
+	while(minesPlaced < n) {
+		// generate random X/Y coordinate
+		int x = arc4random_uniform(this->gridW);
+		int y = arc4random_uniform(this->gridH);
+
+		// is there already a mine here?
+		if(this->storage[x][y].isMine != true) {
+			this->storage[x][y].isMine = true;
+			minesPlaced++;
+		}
+	}
+}
+\end{lstlisting}
+
+\section{Recursive Uncovering}
+When a cell is uncovered with no surrounding mines, all cells adjacent to it (in an 3x3 square, with the clicked cell in the middle) are also uncovered, and so forth, until either all cells are uncovered, or a cell with an adjacent bomb is uncovered.
+
+
+\begin{lstlisting}[frame=single,language=C++]
+void uncoverCell(int x, int y, bool isRecursive = false) {
+	Cell &t = this->storage[x][y];
+
+	// check if this tile is flagged
+	if(t.flagged == true) {
+		return;
+	}
+
+	// check if this tile has been uncovered before
+	if(this->uncoveredCells.contains(Point(x, y))) {
+		return;
+	}
+
+	this->uncoveredCells.push_back(Point(x, y));
+
+	// set uncovered flag
+	t.uncovered = true;
+
+	// is this a mine?
+	if(t.isMine == true && !isRecursive) {
+		// lmao game over
+		this->_parent->gameOver();
+		this->revealMines = true;
+
+		t.bgRed = true;
+	} else {
+		// calculate how many mines there are around this point
+		t.surroundingMines = this->minesAroundCell(x, y);
+
+		// if clue value is zero, uncover all adjacent tiles
+		if(t.surroundingMines == 0) {
+			if((x - 1) >= 0 && (y - 1) >= 0) {
+				this->uncoverCell((x - 1), (y - 1), true);
+			}
+			// top middle
+			if(/*(x - 0) >= 0 &&*/ (y - 1) >= 0) {
+				this->uncoverCell((x - 0), (y - 1), true);
+			}
+			// top right
+			if((x + 1) < this->gridW && (y - 1) >= 0) {
+				this->uncoverCell((x + 1), (y - 1), true);
+			}
+
+			// middle left
+			if((x - 1) >= 0/* && (y - 1) >= 0*/) {
+				this->uncoverCell((x - 1), (y - 0), true);
+			}
+			// middle right
+			if((x + 1) < this->gridW/* && (y - 1) >= 0*/) {
+				this->uncoverCell((x + 1), (y - 0), true);
+			}
+
+			// bottom left
+			if((x - 1) >= 0 && (y + 1) < this->gridH) {
+				this->uncoverCell((x - 1), (y + 1), true);
+			}
+			// bottom middle
+			if(/*(x - 0) >= 0 &&*/ (y + 1) < this->gridH) {
+				this->uncoverCell((x - 0), (y + 1), true);
+			}
+			// bottom right
+			if((x + 1) < this->gridW && (y + 1) < this->gridH) {
+				this->uncoverCell((x + 1), (y + 1), true);
+			}
+		}
+	}
+}
+\end{lstlisting}
+
+\end{document}  
