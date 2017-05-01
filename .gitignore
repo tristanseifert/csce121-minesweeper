@@ -7,3 +7,6 @@ winmine_resources/
 # built stuff
 minesweeper
 minesweeper.dSYM
+
+# files secreted by the program
+scores.dat

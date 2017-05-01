@@ -8,8 +8,8 @@
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 
-\chead{\huge\scshape\bfseries Minesweeper Initial Design}
-\rhead{Tristan Seifert\\ CSCE 121-502}
+\chead{\scshape\bfseries Minesweeper Initial Design}
+\rhead{Tristan Seifert, Blake Powell\\ CSCE 121-502}
 
 \lstset{
 	numbers=left,
@@ -128,5 +128,69 @@ void uncoverCell(int x, int y, bool isRecursive = false) {
 	}
 }
 \end{lstlisting}
+
+
+\section{Find Remaining Mines}
+Determine the number of mines in the current grid. This is done by counting up all mines, then subtracting the number of flags from that count.
+
+\begin{lstlisting}[frame=single,language=C++]
+int getMinesRemaining() {
+	int remaining = 0;
+
+	// calculate the number of mines
+	for(int i = 0; i < this->gridW; i++) {
+		for(int j = 0; j < this->gridH; j++) {
+			TileType t = this->storage[i][j];
+
+			if(t.isMine == true) {
+				remaining++;
+			}
+		}
+	}
+
+	// subtract the number of uncovered/flagged mines
+	for(int i = 0; i < this->gridW; i++) {
+		for(int j = 0; j < this->gridH; j++) {
+			TileType t = this->storage[i][j];
+
+			if(t.flagged == true || (t.isMine == true && t.uncovered == true)) {
+				remaining--;
+			}
+		}
+	}
+
+	return remaining;
+}
+\end{lstlisting}
+
+\section{Calculate Surrounding Mines}
+Given a cell's $(x, y)$ coordinate, determine how many mines are surrounding it. (This is used to calculate the 'hint' value that's shown on the cells when they're uncovered.)
+
+\begin{lstlisting}[frame=single,language=C++]
+int minesAroundCell(int x, int y) {
+	int mines = 0;
+	if((x - 1) >= 0 && (y - 1) >= 0) {
+		mines += (this->storage[(x - 1)][(y - 1)].isMine == true) ? 1 : 0;
+	} if((y - 1) >= 0) {
+		mines += (this->storage[(x - 0)][(y - 1)].isMine == true) ? 1 : 0;
+	} if((x + 1) < this->gridW && (y - 1) >= 0) {
+		mines += (this->storage[(x + 1)][(y - 1)].isMine == true) ? 1 : 0;
+	} if((x - 1) >= 0) {
+		mines += (this->storage[(x - 1)][(y - 0)].isMine == true) ? 1 : 0;
+	} if((x + 1) < this->gridW) {
+		mines += (this->storage[(x + 1)][(y - 0)].isMine == true) ? 1 : 0;
+	} if((x - 1) >= 0 && (y + 1) < this->gridH) {
+		mines += (this->storage[(x - 1)][(y + 1)].isMine == true) ? 1 : 0;
+	} if((y + 1) < this->gridH) {
+		mines += (this->storage[(x - 0)][(y + 1)].isMine == true) ? 1 : 0;
+	} if((x + 1) < this->gridW && (y + 1) < this->gridH) {
+		mines += (this->storage[(x + 1)][(y + 1)].isMine == true) ? 1 : 0;
+	}
+	return mines;
+}
+\end{lstlisting}
+
+\section{Interface}
+The same graphics as in the Windows XP desktop version of Minesweeper are used. See http://courses.cse.tamu.edu/jmichael/sp16/121/project/features.php (under the Board Visualization section,) or the second design document for images.
 
 \end{document}  

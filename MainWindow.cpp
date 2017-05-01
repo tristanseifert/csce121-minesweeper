@@ -35,6 +35,16 @@ void menu_new_game_cb(Fl_Widget *, void *ctx) {
 }
 
 /**
+ * Display high scores: show an alert that lists the high scores for each of
+ * the levels.
+ */
+void show_high_scores_cb(Fl_Widget *, void *ctx) {
+	MainWindow *m = static_cast<MainWindow *>(ctx);
+
+	m->_showHighScores();
+}
+
+/**
  * Timer callback, called every second.
  */
 void timer_cb(void *ctx) {
@@ -64,7 +74,7 @@ void MainWindow::_initMenuBar() {
 	static const Fl_Menu_Item _menuItems[] = {
 		{ "&Game", 0, 0, 0, FL_SUBMENU },
 		{ "&New Game...", FL_COMMAND + 'n', (Fl_Callback *) menu_new_game_cb, this },
-		{ "High Scores...", 0, (Fl_Callback *)nullptr, this, FL_MENU_DIVIDER },
+		{ "High Scores...", 0, (Fl_Callback *) show_high_scores_cb, this, FL_MENU_DIVIDER },
 		{ "Toggle Debug Mode", 0, (Fl_Callback *)toggle_debug_cb, this, FL_MENU_DIVIDER },
 		{ "E&xit", FL_COMMAND + 'q', (Fl_Callback *) quit_cb, this },
 		{ 0 },
@@ -124,6 +134,20 @@ void MainWindow::startGame() {
 }
 
 /**
+ * Displays all the high scores.
+ */
+void MainWindow::_showHighScores() {
+	const ScoreEntry &h1 = this->highScores.entryForDifficulty(0);
+	const ScoreEntry &h2 = this->highScores.entryForDifficulty(1);
+	const ScoreEntry &h3 = this->highScores.entryForDifficulty(2);
+
+	fl_message_title("High Scores");
+	fl_message("Current high scores:\n\nBeginner:\t%s\t%i\nIntermediate:"
+			   "\t%s\t%i\nExpert:\t%s\t%i\n", h1.name.c_str(), h1.time,
+		   	   h2.name.c_str(), h2.time, h3.name.c_str(), h3.time);
+}
+
+/**
  * Queries the user to determine what size the board should be.
  */
 void MainWindow::_newGameCb(bool quitIfCanceled) {
@@ -162,6 +186,8 @@ void MainWindow::_newGameCb(bool quitIfCanceled) {
 void MainWindow::_resetGame() {
 	// clear timer
 	Fl::remove_timeout(timer_cb, this);
+
+	this->board->deactivate();
 }
 
 /**
@@ -257,5 +283,20 @@ void MainWindow::gameWon() {
 	this->_resetGame();
 	this->updateGameStatus();
 
-	// if this game wasn't a custom game,
+	// if this game wasn't a custom game, store high score
+	if(this->canSaveHighScore) {
+		// check the current high score
+		const ScoreEntry &entry = this->highScores.entryForDifficulty(this->highScoreLevel);
+
+		int time = this->board->getTime();
+
+		if(entry.time > time) {
+			fl_message_title("High Score");
+
+			const char *cName = fl_input("Please enter your name.", "Gig me");
+			string name(cName);
+
+			this->highScores.setScoreForDifficulty(this->highScoreLevel, name, time);
+		}
+	}
 }

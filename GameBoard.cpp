@@ -175,6 +175,11 @@ void GameBoard::draw() {
  * Handle user interaction with the board (we only care about click events)
  */
 int GameBoard::handle(int event) {
+	// return if deactivated
+	if(this->active() == false) {
+		return Fl_Box::handle(event);		
+	}
+
 	// mouse down; make sure it's in the bounds
 	if(event == FL_PUSH) {
 		if(Fl::event_x() < this->x() || Fl::event_x() > (this->x() + this->w())) {
