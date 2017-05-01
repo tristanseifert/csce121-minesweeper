@@ -25,11 +25,14 @@ class MainWindow : public Fl_Window {
 		void gameOver();
 		void gameWon();
 
+		friend void timer_cb(void *);
+
 	private:
 		void _initMenuBar();
 		void _initStatusBar();
 
 		void _newGameCb();
+		void _resetGame();
 
 		void _reshape(int w, int h);
 

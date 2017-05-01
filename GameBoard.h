@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <bitset>
+#include <ctime>
 
 class MainWindow;
 
@@ -64,7 +65,7 @@ class GameBoard : public Fl_Box {
 
 		int getMinesRemaining() const;
 		int getTime() const {
-			return -999;
+			return difftime(time(nullptr), this->start);
 		}
 
 	private:
@@ -94,6 +95,9 @@ class GameBoard : public Fl_Box {
 
 		// all cells uncovered
 		std::vector<Point> uncoveredCells;
+
+		// time at which the game was started (i.e. the board is constructed)
+		time_t start;
 };
 
 #endif

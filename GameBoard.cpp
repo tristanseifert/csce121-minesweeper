@@ -44,6 +44,9 @@ GameBoard::GameBoard(int x, int y, int w, int h, MainWindow *parent) : Fl_Box(FL
 
 	// load images
 	this->_loadImages();
+
+	// set time
+	this->start = time(nullptr);
 }
 
 GameBoard::~GameBoard() {

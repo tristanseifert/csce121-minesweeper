@@ -15,6 +15,16 @@ static void quit_cb(Fl_Widget*, void*) {
 	exit(0);
 }
 
+/**
+ * Timer callback, called every second.
+ */
+void timer_cb(void *ctx) {
+	(static_cast<MainWindow *>(ctx))->updateGameStatus();
+
+	// repeat timer
+	Fl::repeat_timeout(1.0, timer_cb, ctx);
+}
+
 
 // define menu items
 static const Fl_Menu_Item _menuItems[] = {
@@ -93,6 +103,16 @@ void MainWindow::_newGameCb() {
 }
 
 /**
+ * Resets the game state. This is called when the game ends, either because the
+ * user has decided to stop the game, won the game, or the game ended because
+ * the user exploded.
+ */
+void MainWindow::_resetGame() {
+	// clear timer
+	Fl::remove_timeout(timer_cb, this);
+}
+
+/**
  * Set up a game with a grid of the given size. This will reshape the window and
  * all controls in it.
  */
@@ -113,6 +133,9 @@ void MainWindow::setupGameSized(int w, int h) {
 
 	// update game status
 	this->updateGameStatus();
+
+	// start timer
+	Fl::repeat_timeout(1.0, timer_cb, this);
 }
 
 /**
@@ -139,11 +162,15 @@ void MainWindow::updateGameStatus() {
 	stringstream ss;
 	ss << setfill('0') << setw(3) << this->board->getMinesRemaining();
 
-	// cout << ss.str() << endl;
 	this->_statusMines->copy_label(ss.str().c_str());
 
+	// update timer
+	ss.str(std::string());
+	ss << setfill('0') << setw(3) << this->board->getTime();
+
+	this->_statusTimer->copy_label(ss.str().c_str());
+
 	// redraw image
-	// this->board->redraw();
 	this->redraw();
 }
 
@@ -154,6 +181,7 @@ void MainWindow::updateGameStatus() {
 void MainWindow::gameOver() {
 	cout << "Game over lmao" << endl;
 
+	this->_resetGame();
 	this->updateGameStatus();
 }
 
@@ -161,5 +189,6 @@ void MainWindow::gameOver() {
  * Called when all mines have been marked, i.e. the game is won.
  */
 void MainWindow::gameWon() {
+	this->_resetGame();
 	this->updateGameStatus();
 }
