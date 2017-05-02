@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[]) {
 	// set up FLTK
-	MainWindow w(320, 500, "Minesweeper (CSCE121-502)");
+	MainWindow w(320, 500, "Minesweeper (CSCE121 Extra Credit)");
 
 	// show window
 	w.show(argc, argv);
