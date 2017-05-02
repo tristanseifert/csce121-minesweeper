@@ -194,6 +194,49 @@ int minesAroundCell(int x, int y) {
 }
 \end{lstlisting}
 
+\section{Persistence}
+The \texttt{ScorePersistence} class handles saving the high scores to a file, and loading them as is needed. It does this using the C++ standard \texttt{ofstream} and \texttt{ifstream} classes.
+
+Each row in the file indicates a different difficulty level, from 0 through 2 -- beginner, intermediate, and expert. If the user choses a custom board size, they will not be allowed to save their scores.
+
+Each line consists of a score, a tab character, and the user's name. It is read line-by-line in the code, and read using the stream input/output operators.
+
+Below is an example score file:
+
+\begin{lstlisting}[frame=single]
+999	No Name
+51	Michael Nowak is the best
+999	No Name
+\end{lstlisting}
+
+Scores of $999$ indicate that no high score has been saved yet, and thus have "No Name" associated with them. (This default data is loaded if the file doesn't exist or cannot be read. When the file is next written, those default entries get written as well.)
+
+Data is found in the \texttt{scores.dat} file.
+
+\begin{lstlisting}[frame=single,language=C++]
+// read three lines from the file
+string str;
+while(std::getline(in, str)) {
+    int score; std::string name;
+
+    istringstream isstr(str);
+    isstr >> score >> name;
+
+    this->data.push_back(ScoreEntry(score, name));
+}
+\end{lstlisting}
+
+
+\begin{lstlisting}[frame=single,language=C++]
+ofstream out("scores.dat");
+
+for(int i = 0; i < 3; i++) {
+    out << this->data[i].time << "\t";
+    out << this->data[i].name << endl;
+}
+\end{lstlisting}
+
+\pagebreak
 \section{Interface}
 The same graphics as in the Windows XP desktop version of Minesweeper are used. See http://courses.cse.tamu.edu/jmichael/sp16/121/project/features.php (under the Board Visualization section,) or the second design document for images.
 
