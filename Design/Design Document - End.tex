@@ -32,7 +32,7 @@ The program will be divided into four parts:
 	\item \textbf{New Game Dialog}: Allows the user to select which difficulty level they want to play the game at, or use a custom grid size and mine count.
 \end{itemize}
 
-Every algorithm initially outlined in the initial document was used in the \texttt{C++} code with very minor modifications, so they are reproduced below.
+Every algorithm initially outlined in the initial document was used in the \texttt{C++} code with very minor modifications, so they are reproduced below. An algorithm for persisting high scores was added on top of what the initial design document outlined.
 
 \section{Distribute Mines}
 This algorithm will place $n$ mines randomly throughout the grid.
@@ -214,6 +214,18 @@ Scores of $999$ indicate that no high score has been saved yet, and thus have "N
 Data is found in the \texttt{scores.dat} file.
 
 \begin{lstlisting}[frame=single,language=C++]
+ifstream in("scores.dat");
+
+if(!in) {
+    cout << "Couldn't open high scores: using defaults!" << endl;
+
+    this->data.push_back(ScoreEntry(999, "No Name"));
+    this->data.push_back(ScoreEntry(999, "No Name"));
+    this->data.push_back(ScoreEntry(999, "No Name"));
+
+    return;
+}
+
 // read three lines from the file
 string str;
 while(std::getline(in, str)) {
