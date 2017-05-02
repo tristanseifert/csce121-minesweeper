@@ -9,6 +9,17 @@
 
 #include <FL/fl_draw.H>
 
+#ifdef __linux__
+/**
+ * Generates a random number in the range [0, topBound). This _should_ be defined in the
+ * BSD library headers, but Linux is a piece of crap and doesn't believe in those,
+ * apparently. But what else is new?
+ */
+static int arc4random_uniform(int topBound) {
+	return rand() % topBound;
+}
+#endif
+
 using namespace std;
 
 // colors for mine counters, 0 through 8

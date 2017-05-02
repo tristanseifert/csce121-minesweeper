@@ -212,8 +212,8 @@ void MainWindow::_resetGame() {
  * all controls in it.
  */
 void MainWindow::setupGameSized(int w, int h) {
-	// clear any old shit
-	delete this->board;
+	// clear any old board data
+	if(this->board) delete this->board;
 
 	// reshape window
 	this->_reshape(w, h);
@@ -314,6 +314,13 @@ void MainWindow::gameWon() {
 			string name(cName);
 
 			this->highScores.setScoreForDifficulty(this->highScoreLevel, name, time);
+		} else {
+			// display message
+			fl_message_title("You Won!");
+			fl_message("Congratulations, you won! However, you weren't fast enough to beat your high score. Better luck next time.");
 		}
+	} else {
+		fl_message_title("You Won!");
+		fl_message("Congratulations, you won!");
 	}
 }

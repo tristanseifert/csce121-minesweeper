@@ -64,7 +64,7 @@ class MainWindow : public Fl_Window {
 
 		NewGameDialog *newGameDialog = nullptr;
 
-		GameBoard *board;
+		GameBoard *board = nullptr;
 
 		// When set, a high score can be saved later
 		bool canSaveHighScore = false;
